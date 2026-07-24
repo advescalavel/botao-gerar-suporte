@@ -129,6 +129,11 @@
   </div>
 
 <script>
+  window.onerror = function (msg, src, line, col, err) {
+    showStatus('Erro JS não tratado: ' + msg + ' (linha ' + line + ')', false);
+    return false;
+  };
+
   function showStatus(msg, ok) {
     var el = document.getElementById('status');
     el.textContent = msg;
@@ -153,28 +158,33 @@
       showStatus('Sem resposta do Bitrix24 após 8s. Abra o Console do navegador (F12) dentro deste iframe e veja se há erro — provavelmente é escopo/permissão.', false);
     }, 8000);
 
-    BX24.callMethod(
-      'placement.bind',
-      {
-        PLACEMENT: 'IM_TEXTAREA',
-        HANDLER: handlerUrl,
-        TITLE: 'Abrir chamado técnico',
-        OPTIONS: {
-          iconName: 'chat-compose',
-          context: 'LINES',   // só aparece em chats de Open Line (Contact Center)
-          role: 'USER',
-          color: 'ORANGE'
+    try {
+      BX24.callMethod(
+        'placement.bind',
+        {
+          PLACEMENT: 'IM_TEXTAREA',
+          HANDLER: handlerUrl,
+          TITLE: 'Abrir chamado técnico',
+          OPTIONS: {
+            iconName: 'chat-compose',
+            context: 'LINES',   // só aparece em chats de Open Line (Contact Center)
+            role: 'USER',
+            color: 'ORANGE'
+          }
+        },
+        function (result) {
+          clearTimeout(timeoutId);
+          if (result.error()) {
+            showStatus('Erro ao ativar: ' + JSON.stringify(result.error()), false);
+          } else {
+            showStatus('Botão ativado. Abra um chat de Open Line para conferir.', true);
+          }
         }
-      },
-      function (result) {
-        clearTimeout(timeoutId);
-        if (result.error()) {
-          showStatus('Erro ao ativar: ' + JSON.stringify(result.error()), false);
-        } else {
-          showStatus('Botão ativado. Abra um chat de Open Line para conferir.', true);
-        }
-      }
-    );
+      );
+    } catch (e) {
+      clearTimeout(timeoutId);
+      showStatus('Exceção ao chamar placement.bind: ' + e.message, false);
+    }
   }
 
   function remover() {
