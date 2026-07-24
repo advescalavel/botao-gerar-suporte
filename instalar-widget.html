@@ -102,6 +102,8 @@
     font-size: 13px;
     display: none;
     line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
   .status.ok { display: block; background: var(--ok-bg); color: var(--ok); }
   .status.err { display: block; background: var(--err-bg); color: var(--err); }
@@ -133,6 +135,21 @@
     showStatus('Erro JS não tratado: ' + msg + ' (linha ' + line + ')', false);
     return false;
   };
+
+  function safeStringify(obj) {
+    var seen = [];
+    try {
+      return JSON.stringify(obj, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+          if (seen.indexOf(value) !== -1) return '[circular]';
+          seen.push(value);
+        }
+        return value;
+      }, 2);
+    } catch (e) {
+      return String(obj);
+    }
+  }
 
   function showStatus(msg, ok) {
     var el = document.getElementById('status');
@@ -175,7 +192,7 @@
         function (result) {
           clearTimeout(timeoutId);
           if (result.error()) {
-            showStatus('Erro ao ativar: ' + JSON.stringify(result.error()), false);
+            showStatus('Erro ao ativar: ' + safeStringify(result.error()), false);
           } else {
             showStatus('Botão ativado. Abra um chat de Open Line para conferir.', true);
           }
@@ -197,7 +214,7 @@
       { PLACEMENT: 'IM_TEXTAREA' },
       function (result) {
         if (result.error()) {
-          showStatus('Erro ao remover: ' + JSON.stringify(result.error()), false);
+          showStatus('Erro ao remover: ' + safeStringify(result.error()), false);
         } else {
           showStatus('Botão removido.', true);
         }
