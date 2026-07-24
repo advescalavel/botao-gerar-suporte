@@ -1,12 +1,226 @@
 export default function handler(req, res) {
-  res.status(200).send(`
-    <!DOCTYPE html>
-    <html>
-      <body>
-        <script>
-          window.location.href = "/botao-chamado-suporte.html";
-        </script>
-      </body>
-    </html>
-  `);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.status(200).send(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chamado técnico</title>
+<script src="//api.bitrix24.com/api/v1/"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1e2129;
+    --text-muted: #6a7078;
+    --border: #e6e8eb;
+    --accent: #2547e0;
+    --ok: #1c9e5a;
+    --ok-bg: #eafaf1;
+    --err: #d84a3a;
+    --err-bg: #fdecea;
+    --warn-bg: #fff8e6;
+    --warn: #a06a00;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+  .panel {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+  }
+  .icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 20px;
+  }
+  .icon.loading { background: #eef0ff; color: var(--accent); }
+  .icon.ok { background: var(--ok-bg); color: var(--ok); }
+  .icon.err { background: var(--err-bg); color: var(--err); }
+  .icon.warn { background: var(--warn-bg); color: var(--warn); }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid #cfd6ff;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; border-top-color: #cfd6ff; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  p.detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .meta {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  button {
+    margin-top: 14px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button:hover { background: #f4f5f7; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+  <div class="panel">
+    <div id="icon" class="icon loading"><div class="spinner"></div></div>
+    <h1 id="title">Registrando chamado…</h1>
+    <p class="detail" id="detail">Coletando informações do atendimento.</p>
+    <div class="meta" id="meta" style="display:none;"></div>
+    <button id="retryBtn" style="display:none;" onclick="enviar()">Tentar novamente</button>
+  </div>
+
+<script>
+  // ---- CONFIGURAÇÃO ----
+  var N8N_WEBHOOK_URL = 'https://webhook.prod.advocaciaescalaveldev.shop/webhook/sofia-suporte';
+  // -----------------------
+
+  var contexto = { dialogId: null, colaborador: null, portal: null };
+
+  function setState(state, titleText, detailText) {
+    var icon = document.getElementById('icon');
+    var title = document.getElementById('title');
+    var detail = document.getElementById('detail');
+    var retry = document.getElementById('retryBtn');
+
+    icon.className = 'icon ' + state;
+    title.textContent = titleText;
+    detail.textContent = detailText;
+
+    if (state === 'loading') {
+      icon.innerHTML = '<div class="spinner"></div>';
+      retry.style.display = 'none';
+    } else if (state === 'ok') {
+      icon.innerHTML = '✓';
+      retry.style.display = 'none';
+    } else if (state === 'err') {
+      icon.innerHTML = '!';
+      retry.style.display = 'inline-block';
+    } else if (state === 'warn') {
+      icon.innerHTML = '!';
+      retry.style.display = 'none';
+    }
+  }
+
+  function showMeta() {
+    if (!contexto.dialogId) return;
+    var meta = document.getElementById('meta');
+    meta.style.display = 'block';
+    meta.textContent = 'Chat: ' + contexto.dialogId +
+      (contexto.colaborador ? ' · ' + contexto.colaborador.nome : '');
+  }
+
+  function enviar() {
+    if (!contexto.dialogId) {
+      setState('warn', 'Não foi possível identificar o atendimento',
+        'Abra este botão dentro de um chat de Open Line em andamento.');
+      return;
+    }
+
+    setState('loading', 'Registrando chamado…', 'Enviando dados para a Sofia.');
+
+    var payload = {
+      dialog_id: contexto.dialogId,
+      colaborador: contexto.colaborador,
+      portal: contexto.portal,
+      origem: 'bitrix24_contact_center_botao',
+      timestamp: new Date().toISOString()
+    };
+
+    fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        setState('ok', 'Chamado registrado', 'A equipe técnica já tem acesso ao contexto deste atendimento.');
+        showMeta();
+      })
+      .catch(function (err) {
+        setState('err', 'Falha ao registrar', 'Não foi possível falar com a Sofia agora.');
+        showMeta();
+      });
+  }
+
+  function iniciar() {
+    BX24.init(function () {
+      var info = {};
+      try {
+        info = BX24.placement.info() || {};
+      } catch (e) {}
+
+      var options = info.options || {};
+      contexto.dialogId = options.dialogId || null;
+
+      var auth = BX24.getAuth ? BX24.getAuth() : null;
+      contexto.portal = auth ? auth.domain : null;
+
+      BX24.callMethod('user.current', {}, function (result) {
+        if (!result.error()) {
+          var u = result.data();
+          contexto.colaborador = {
+            id: u.ID,
+            nome: (u.NAME || '') + ' ' + (u.LAST_NAME || '')
+          };
+        }
+        enviar();
+      });
+
+      try { if (typeof BX24.fitWindow === 'function') BX24.fitWindow(); } catch (e) {}
+    });
+  }
+
+  if (window.BX24) {
+    iniciar();
+  } else {
+    setState('err', 'Não foi possível carregar o Bitrix24', 'Recarregue e tente novamente.');
+  }
+</script>
+
+</body>
+</html>
+`);
 }
