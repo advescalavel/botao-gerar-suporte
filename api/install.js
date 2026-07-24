@@ -197,7 +197,17 @@ export default function handler(req, res) {
           if (result.error()) {
             showStatus('Erro ao ativar: ' + safeStringify(result.error()), false);
           } else {
-            showStatus('Botão ativado. Abra um chat de Open Line para conferir.', true);
+            try {
+              BX24.installFinish();
+            } catch (e) {}
+
+            BX24.callMethod('app.info', {}, function (infoResult) {
+              var installed = !infoResult.error() && infoResult.data().INSTALLED;
+              showStatus(
+                'Botão ativado e instalação finalizada (INSTALLED: ' + installed + '). Abra um chat de Open Line para conferir.',
+                true
+              );
+            });
           }
         }
       );
@@ -245,6 +255,12 @@ export default function handler(req, res) {
         var debugEl = document.getElementById('debug');
         debugEl.style.display = 'block';
         debugEl.textContent = 'getAuth(): ' + safeStringify(auth);
+
+        BX24.callMethod('app.info', {}, function (infoResult) {
+          if (!infoResult.error()) {
+            debugEl.textContent += '\\napp.info(): INSTALLED = ' + infoResult.data().INSTALLED;
+          }
+        });
       } catch (e) {
         console.error('getAuth falhou', e);
       }
