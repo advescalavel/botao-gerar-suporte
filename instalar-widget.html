@@ -79,6 +79,10 @@
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
   .btn-primary {
     background: var(--accent);
     color: #fff;
@@ -115,8 +119,8 @@
 
     <label for="handlerUrl">URL do botão (aponte para a function, não para o .html direto)</label>
     <input type="text" id="handlerUrl"
-      value="https://botao-gerar-suporte.vercel.app/api/suporte"
-      placeholder="https://botao-gerar-suporte.vercel.app/api/suporte">
+      value="https://SEU-DOMINIO.vercel.app/api/suporte"
+      placeholder="https://seu-dominio.vercel.app/api/suporte">
 
     <button class="btn-primary" onclick="ativar()">Ativar botão</button>
     <button class="btn-secondary" onclick="remover()">Remover botão</button>
@@ -132,11 +136,22 @@
   }
 
   function ativar() {
-    var handlerUrl = document.getElementById('handlerUrl').value.trim();
-    if (!handlerUrl || handlerUrl.indexOf('SEU-DOMINIO') !== -1) {
-      showStatus('Informe a URL real do arquivo botao-chamado-suporte.html antes de ativar.', false);
+    if (!sdkReady) {
+      showStatus('O SDK do Bitrix24 ainda não terminou de carregar. Aguarde alguns segundos e clique de novo.', false);
       return;
     }
+
+    var handlerUrl = document.getElementById('handlerUrl').value.trim();
+    if (!handlerUrl || handlerUrl.indexOf('SEU-DOMINIO') !== -1) {
+      showStatus('Informe a URL real da function /api/suporte antes de ativar.', false);
+      return;
+    }
+
+    showStatus('Enviando registro…', true);
+
+    var timeoutId = setTimeout(function () {
+      showStatus('Sem resposta do Bitrix24 após 8s. Abra o Console do navegador (F12) dentro deste iframe e veja se há erro — provavelmente é escopo/permissão.', false);
+    }, 8000);
 
     BX24.callMethod(
       'placement.bind',
@@ -152,6 +167,7 @@
         }
       },
       function (result) {
+        clearTimeout(timeoutId);
         if (result.error()) {
           showStatus('Erro ao ativar: ' + JSON.stringify(result.error()), false);
         } else {
@@ -162,6 +178,10 @@
   }
 
   function remover() {
+    if (!sdkReady) {
+      showStatus('O SDK do Bitrix24 ainda não terminou de carregar. Aguarde alguns segundos e clique de novo.', false);
+      return;
+    }
     BX24.callMethod(
       'placement.unbind',
       { PLACEMENT: 'IM_TEXTAREA' },
@@ -175,9 +195,24 @@
     );
   }
 
-  BX24.init(function () {
-    // pronto — app carregado dentro do Bitrix24
-  });
+  var sdkReady = false;
+
+  function setButtonsState(ready) {
+    var primary = document.querySelector('.btn-primary');
+    primary.disabled = !ready;
+    primary.textContent = ready ? 'Ativar botão' : 'Carregando SDK do Bitrix24…';
+  }
+
+  setButtonsState(false);
+
+  if (window.BX24) {
+    BX24.init(function () {
+      sdkReady = true;
+      setButtonsState(true);
+    });
+  } else {
+    showStatus('BX24.js não carregou. Confirme que esta página está sendo aberta de dentro do Bitrix24 (não direto no navegador).', false);
+  }
 </script>
 
 </body>
