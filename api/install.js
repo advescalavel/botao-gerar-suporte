@@ -1,12 +1,260 @@
 export default function handler(req, res) {
-  res.status(200).send(`
-    <!DOCTYPE html>
-    <html>
-      <body>
-        <script>
-          window.location.href = "/";
-        </script>
-      </body>
-    </html>
-  `);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.status(200).send(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Instalar botão — Chamado de Suporte (Sofia)</title>
+<script src="//api.bitrix24.com/api/v1/"></script>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e1e4e8;
+    --text: #1e2129;
+    --text-muted: #6a7078;
+    --accent: #2547e0;
+    --accent-hover: #1c37b3;
+    --ok: #1c9e5a;
+    --ok-bg: #eafaf1;
+    --err: #d84a3a;
+    --err-bg: #fdecea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: var(--bg);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+  }
+  .card {
+    max-width: 440px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 24px;
+  }
+  h1 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  p.sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 22px;
+    line-height: 1.5;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    font-family: inherit;
+  }
+  input[type="text"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  button {
+    width: 100%;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--err);
+    border: 1px solid var(--err);
+  }
+  .btn-secondary:hover { background: var(--err-bg); }
+  .status {
+    margin-top: 16px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .status.ok { display: block; background: var(--ok-bg); color: var(--ok); }
+  .status.err { display: block; background: var(--err-bg); color: var(--err); }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Botão de chamado técnico — Sofia</h1>
+    <p class="sub">
+      Registra (uma única vez) o botão que aparece no painel de mensagem
+      durante atendimentos de Open Line, para abertura silenciosa de
+      chamado de suporte.
+    </p>
+
+    <label for="handlerUrl">URL do botão (aponte para a function, não para o .html direto)</label>
+    <input type="text" id="handlerUrl"
+      value="https://SEU-DOMINIO.vercel.app/api/suporte"
+      placeholder="https://seu-dominio.vercel.app/api/suporte">
+
+    <button class="btn-primary" onclick="ativar()">Ativar botão</button>
+    <button class="btn-secondary" onclick="remover()">Remover botão</button>
+
+    <div id="status" class="status"></div>
+    <div id="debug" class="status" style="display:none; background:#f0f1f3; color:#444; font-family: monospace; font-size: 11px;"></div>
+  </div>
+
+<script>
+  window.onerror = function (msg, src, line, col, err) {
+    showStatus('Erro JS não tratado: ' + msg + ' (linha ' + line + ')', false);
+    return false;
+  };
+
+  function safeStringify(obj) {
+    var seen = [];
+    try {
+      return JSON.stringify(obj, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+          if (seen.indexOf(value) !== -1) return '[circular]';
+          seen.push(value);
+        }
+        return value;
+      }, 2);
+    } catch (e) {
+      return String(obj);
+    }
+  }
+
+  function showStatus(msg, ok) {
+    var el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status ' + (ok ? 'ok' : 'err');
+  }
+
+  function ativar() {
+    if (!sdkReady) {
+      showStatus('O SDK do Bitrix24 ainda não terminou de carregar. Aguarde alguns segundos e clique de novo.', false);
+      return;
+    }
+
+    var handlerUrl = document.getElementById('handlerUrl').value.trim();
+    if (!handlerUrl || handlerUrl.indexOf('SEU-DOMINIO') !== -1) {
+      showStatus('Informe a URL real da function /api/suporte antes de ativar.', false);
+      return;
+    }
+
+    showStatus('Enviando registro…', true);
+
+    var timeoutId = setTimeout(function () {
+      showStatus('Sem resposta do Bitrix24 após 8s. Abra o Console do navegador (F12) dentro deste iframe e veja se há erro — provavelmente é escopo/permissão.', false);
+    }, 8000);
+
+    try {
+      BX24.callMethod(
+        'placement.bind',
+        {
+          PLACEMENT: 'IM_TEXTAREA',
+          HANDLER: handlerUrl,
+          TITLE: 'Abrir chamado técnico',
+          OPTIONS: {
+            iconName: 'chat-compose',
+            context: 'LINES',   // só aparece em chats de Open Line (Contact Center)
+            role: 'USER',
+            color: 'ORANGE'
+          }
+        },
+        function (result) {
+          clearTimeout(timeoutId);
+          if (result.error()) {
+            showStatus('Erro ao ativar: ' + safeStringify(result.error()), false);
+          } else {
+            showStatus('Botão ativado. Abra um chat de Open Line para conferir.', true);
+          }
+        }
+      );
+    } catch (e) {
+      clearTimeout(timeoutId);
+      showStatus('Exceção ao chamar placement.bind: ' + e.message, false);
+    }
+  }
+
+  function remover() {
+    if (!sdkReady) {
+      showStatus('O SDK do Bitrix24 ainda não terminou de carregar. Aguarde alguns segundos e clique de novo.', false);
+      return;
+    }
+    BX24.callMethod(
+      'placement.unbind',
+      { PLACEMENT: 'IM_TEXTAREA' },
+      function (result) {
+        if (result.error()) {
+          showStatus('Erro ao remover: ' + safeStringify(result.error()), false);
+        } else {
+          showStatus('Botão removido.', true);
+        }
+      }
+    );
+  }
+
+  var sdkReady = false;
+
+  function setButtonsState(ready) {
+    var primary = document.querySelector('.btn-primary');
+    primary.disabled = !ready;
+    primary.textContent = ready ? 'Ativar botão' : 'Carregando SDK do Bitrix24…';
+  }
+
+  setButtonsState(false);
+
+  if (window.BX24) {
+    BX24.init(function () {
+      sdkReady = true;
+      setButtonsState(true);
+
+      try {
+        var auth = BX24.getAuth();
+        var debugEl = document.getElementById('debug');
+        debugEl.style.display = 'block';
+        debugEl.textContent = 'getAuth(): ' + safeStringify(auth);
+      } catch (e) {
+        console.error('getAuth falhou', e);
+      }
+    });
+  } else {
+    showStatus('BX24.js não carregou. Confirme que esta página está sendo aberta de dentro do Bitrix24 (não direto no navegador).', false);
+  }
+</script>
+
+</body>
+</html>
+`);
 }
