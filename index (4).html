@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Botão de chamado técnico — Sofia</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e1e4e8;
+    --text: #1e2129;
+    --text-muted: #6a7078;
+    --accent: #2547e0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+  }
+  .card {
+    max-width: 440px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 24px;
+  }
+  h1 { font-size: 17px; font-weight: 600; margin: 0 0 6px; }
+  p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  a.link {
+    display: block;
+    padding: 12px 14px;
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  a.link:hover { border-color: var(--accent); color: var(--accent); }
+  a.link span.desc {
+    display: block;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .note {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Botão de chamado técnico — Sofia</h1>
+    <p>Este projeto tem duas páginas, usadas em momentos diferentes do setup.</p>
+
+    <a class="link" href="./instalar-widget.html">
+      Instalar / ativar o botão
+      <span class="desc">Abra esta página de dentro do App Local no Bitrix24, uma única vez, para registrar o botão.</span>
+    </a>
+
+    <a class="link" href="./botao-chamado-suporte.html">
+      Página do botão (handler)
+      <span class="desc">Não abra diretamente — é a URL que você configura como HANDLER. Só funciona quando chamada pelo Bitrix24.</span>
+    </a>
+
+    <div class="note">
+      Se você chegou aqui direto pelo domínio raiz, provavelmente queria a primeira página.
+    </div>
+  </div>
+</body>
+</html>
