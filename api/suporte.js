@@ -5,15 +5,16 @@ export default function handler(req, res) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chamado técnico</title>
+<title>Chamado técnico — Sofia</title>
 <script src="//api.bitrix24.com/api/v1/"></script>
 <style>
   :root {
+    --primary: #2B2B6E;
+    --accent: #FF038F;
     --bg: #ffffff;
     --text: #1e2129;
     --text-muted: #6a7078;
-    --border: #e6e8eb;
-    --accent: #2547e0;
+    --border: #ece7f0;
     --ok: #1c9e5a;
     --ok-bg: #eafaf1;
     --err: #d84a3a;
@@ -31,85 +32,147 @@ export default function handler(req, res) {
   }
   body {
     display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .header {
+    background: var(--primary);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .header h1 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+  .header span {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .body {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 18px;
+    padding: 28px 24px;
   }
   .panel {
     width: 100%;
-    max-width: 300px;
+    max-width: 320px;
     text-align: center;
   }
   .icon {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 12px;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 22px;
+    font-weight: 600;
   }
-  .icon.loading { background: #eef0ff; color: var(--accent); }
+  .icon.loading { background: #ffe6f5; color: var(--accent); }
   .icon.ok { background: var(--ok-bg); color: var(--ok); }
   .icon.err { background: var(--err-bg); color: var(--err); }
   .icon.warn { background: var(--warn-bg); color: var(--warn); }
 
   .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2.5px solid #cfd6ff;
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid #ffd0ec;
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
   @media (prefers-reduced-motion: reduce) {
-    .spinner { animation: none; border-top-color: #cfd6ff; }
+    .spinner { animation: none; border-top-color: #ffd0ec; }
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  h1 {
-    font-size: 14px;
+  h2 {
+    font-size: 15px;
     font-weight: 600;
-    margin: 0 0 4px;
+    margin: 0 0 6px;
+    color: var(--primary);
   }
   p.detail {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-muted);
     margin: 0;
     line-height: 1.5;
   }
   .meta {
-    margin-top: 12px;
-    font-size: 11px;
+    margin-top: 16px;
+    font-size: 11.5px;
     color: var(--text-muted);
     border-top: 1px solid var(--border);
-    padding-top: 10px;
+    padding-top: 12px;
+    text-align: left;
+  }
+  .meta div { margin-bottom: 3px; }
+  .debug {
+    margin-top: 14px;
+    font-size: 10.5px;
+    color: #9a4a6b;
+    background: #fff5fa;
+    border: 1px solid #ffd6ec;
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: left;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: none;
   }
   button {
-    margin-top: 14px;
-    padding: 8px 14px;
-    font-size: 12px;
+    margin-top: 18px;
+    padding: 9px 16px;
+    font-size: 12.5px;
     font-weight: 600;
-    border-radius: 6px;
-    border: 1px solid var(--border);
+    border-radius: 7px;
+    border: 1.5px solid var(--accent);
     background: #fff;
-    color: var(--text);
+    color: var(--accent);
     cursor: pointer;
     font-family: inherit;
   }
-  button:hover { background: #f4f5f7; }
+  button:hover { background: #fff0f8; }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 </head>
 <body>
 
-  <div class="panel">
-    <div id="icon" class="icon loading"><div class="spinner"></div></div>
-    <h1 id="title">Registrando chamado…</h1>
-    <p class="detail" id="detail">Coletando informações do atendimento.</p>
-    <div class="meta" id="meta" style="display:none;"></div>
-    <button id="retryBtn" style="display:none;" onclick="enviar()">Tentar novamente</button>
+  <div class="header">
+    <div class="dot"></div>
+    <div>
+      <h1>Advocacia Escalável</h1>
+      <span>Chamado técnico via Sofia</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="panel">
+      <div id="icon" class="icon loading"><div class="spinner"></div></div>
+      <h2 id="title">Registrando chamado…</h2>
+      <p class="detail" id="detail">Coletando informações do atendimento.</p>
+      <div class="meta" id="meta" style="display:none;"></div>
+      <div class="debug" id="debug"></div>
+      <button id="retryBtn" style="display:none;" onclick="enviar()">Tentar novamente</button>
+    </div>
   </div>
 
 <script>
@@ -117,7 +180,18 @@ export default function handler(req, res) {
   var N8N_WEBHOOK_URL = 'https://webhook.prod.advocaciaescalaveldev.shop/webhook/sofia-suporte';
   // -----------------------
 
-  var contexto = { dialogId: null, colaborador: null, portal: null };
+  var contexto = { dialogId: null, chatId: null, colaborador: null, portal: null };
+
+  window.onerror = function (msg, src, line, col, err) {
+    showDebug('Erro JS: ' + msg + ' (linha ' + line + ')');
+    return false;
+  };
+
+  function showDebug(text) {
+    var el = document.getElementById('debug');
+    el.style.display = 'block';
+    el.textContent = text;
+  }
 
   function setState(state, titleText, detailText) {
     var icon = document.getElementById('icon');
@@ -148,8 +222,44 @@ export default function handler(req, res) {
     if (!contexto.dialogId) return;
     var meta = document.getElementById('meta');
     meta.style.display = 'block';
-    meta.textContent = 'Chat: ' + contexto.dialogId +
-      (contexto.colaborador ? ' · ' + contexto.colaborador.nome : '');
+    meta.innerHTML =
+      '<div>Chat: ' + contexto.dialogId + '</div>' +
+      (contexto.colaborador ? '<div>Colaborador: ' + contexto.colaborador.nome + '</div>' : '') +
+      (contexto.mensagensCount !== undefined ? '<div>Mensagens capturadas: ' + contexto.mensagensCount + '</div>' : '');
+  }
+
+  function buscarHistorico(callback) {
+    if (!contexto.chatId) { callback([]); return; }
+
+    BX24.callMethod(
+      'imopenlines.session.history.get',
+      { CHAT_ID: contexto.chatId },
+      function (result) {
+        if (result.error()) {
+          showDebug('Histórico indisponível: ' + JSON.stringify(result.error()));
+          callback([]);
+          return;
+        }
+
+        var data = result.data();
+        var msgs = data.message || {};
+        var users = data.users || {};
+
+        var lista = Object.keys(msgs).map(function (id) {
+          var m = msgs[id];
+          var autor = users[m.senderid];
+          return {
+            id: parseInt(id, 10),
+            remetente: autor ? autor.name : ('usuário ' + m.senderid),
+            texto: m.textlegacy || m.text,
+            data: m.date
+          };
+        });
+
+        lista.sort(function (a, b) { return a.id - b.id; });
+        callback(lista);
+      }
+    );
   }
 
   function enviar() {
@@ -159,30 +269,39 @@ export default function handler(req, res) {
       return;
     }
 
-    setState('loading', 'Registrando chamado…', 'Enviando dados para a Sofia.');
+    setState('loading', 'Registrando chamado…', 'Coletando o histórico da conversa.');
 
-    var payload = {
-      dialog_id: contexto.dialogId,
-      colaborador: contexto.colaborador,
-      portal: contexto.portal,
-      origem: 'bitrix24_contact_center_botao',
-      timestamp: new Date().toISOString()
-    };
+    buscarHistorico(function (mensagens) {
+      contexto.mensagensCount = mensagens.length;
 
-    fetch(N8N_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        setState('ok', 'Chamado registrado', 'A equipe técnica já tem acesso ao contexto deste atendimento.');
-        showMeta();
+      var payload = {
+        dialog_id: contexto.dialogId,
+        chat_id: contexto.chatId,
+        colaborador: contexto.colaborador,
+        portal: contexto.portal,
+        origem: 'bitrix24_contact_center_botao',
+        timestamp: new Date().toISOString(),
+        mensagens: mensagens
+      };
+
+      setState('loading', 'Enviando para a Sofia…', 'Transmitindo ' + mensagens.length + ' mensagem(ns) da sessão.');
+
+      fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       })
-      .catch(function (err) {
-        setState('err', 'Falha ao registrar', 'Não foi possível falar com a Sofia agora.');
-        showMeta();
-      });
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          setState('ok', 'Chamado registrado', 'A equipe técnica já tem acesso ao contexto completo deste atendimento.');
+          showMeta();
+        })
+        .catch(function (err) {
+          setState('err', 'Falha ao registrar', 'Não foi possível falar com a Sofia agora.');
+          showDebug('Erro no fetch: ' + err.message + ' — se for "Failed to fetch", provavelmente é CORS no webhook n8n (falta Access-Control-Allow-Origin liberando este domínio).');
+          showMeta();
+        });
+    });
   }
 
   function iniciar() {
@@ -194,6 +313,7 @@ export default function handler(req, res) {
 
       var options = info.options || {};
       contexto.dialogId = options.dialogId || null;
+      contexto.chatId = contexto.dialogId ? contexto.dialogId.replace(/^chat/, '') : null;
 
       var auth = BX24.getAuth ? BX24.getAuth() : null;
       contexto.portal = auth ? auth.domain : null;
