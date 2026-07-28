@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+export default function handler(req, res) {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.status(200).send(`<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -187,7 +189,9 @@
             iconName: 'chat-compose',
             context: 'LINES',   // só aparece em chats de Open Line (Contact Center)
             role: 'USER',
-            color: 'ORANGE'
+            color: 'PINK',      // aproximação mais próxima da marca disponível na paleta fixa do Bitrix24
+            width: 420,
+            height: 560
           }
         },
         function (result) {
@@ -256,7 +260,7 @@
 
         BX24.callMethod('app.info', {}, function (infoResult) {
           if (!infoResult.error()) {
-            debugEl.textContent += '\napp.info(): INSTALLED = ' + infoResult.data().INSTALLED;
+            debugEl.textContent += '\\napp.info(): INSTALLED = ' + infoResult.data().INSTALLED;
           }
         });
       } catch (e) {
@@ -270,3 +274,5 @@
 
 </body>
 </html>
+`);
+}
