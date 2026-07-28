@@ -189,7 +189,9 @@ export default function handler(req, res) {
             iconName: 'chat-compose',
             context: 'LINES',   // só aparece em chats de Open Line (Contact Center)
             role: 'USER',
-            color: 'ORANGE'
+            color: 'PINK',      // aproximação mais próxima da marca disponível na paleta fixa do Bitrix24
+            width: 420,
+            height: 560
           }
         },
         function (result) {
