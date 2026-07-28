@@ -177,7 +177,7 @@ export default function handler(req, res) {
 
 <script>
   // ---- CONFIGURAÇÃO ----
-  var N8N_WEBHOOK_URL = 'https://webhook.prod.advocaciaescalaveldev.shop/webhook/sofia-suporte';
+  var N8N_WEBHOOK_URL = 'https://webhook.prod.advocaciaescalaveldev.shop/webhook-test/sofia-gerar-pedido-de-suporte';
   // -----------------------
 
   var contexto = { dialogId: null, chatId: null, colaborador: null, portal: null };
