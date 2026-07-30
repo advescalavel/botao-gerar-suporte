@@ -5,7 +5,7 @@ export default function handler(req, res) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chamado técnico — Sofia</title>
+<title>Abrir pedido de suporte — Sofia</title>
 <script src="//api.bitrix24.com/api/v1/"></script>
 <style>
   :root {
@@ -83,7 +83,7 @@ export default function handler(req, res) {
     <div class="dot"></div>
     <div style="flex: 1;">
       <h1>Advocacia Escalável</h1>
-      <span>Chamado técnico via Sofia</span>
+      <span>Abrir pedido de suporte via Sofia</span>
     </div>
     <a href="https://docs.google.com/document/d/17Fss4zZHuNkqEtVV-nXOPWbDiJs6tlj0iogEUrYKdrA/edit?usp=sharing"
        target="_blank" rel="noopener" class="guia-link">Guia de uso ↗</a>
@@ -112,7 +112,7 @@ export default function handler(req, res) {
       <div id="messageList"></div>
       <label class="checkbox-row">
         <input type="checkbox" id="avisarCliente" checked>
-        <span>Avisar no chat que o chamado foi aberto</span>
+        <span>Comunicar cliente sobre abertura do pedido</span>
       </label>
       <button class="confirm-btn" id="confirmBtn" onclick="confirmarGeracao()">Gerar pedido de suporte</button>
     </div>
