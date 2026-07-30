@@ -30,6 +30,8 @@ export default function handler(req, res) {
   .header .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
   .header h1 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: 0.2px; }
   .header span { display: block; font-size: 10.5px; color: rgba(255,255,255,0.65); margin-top: 1px; font-weight: 400; }
+  .header .guia-link { font-size: 10.5px; color: rgba(255,255,255,0.85); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+  .header .guia-link:hover { color: #fff; text-decoration: underline; }
 
   .body { flex: 1; display: flex; flex-direction: column; padding: 16px 18px; overflow: hidden; }
 
@@ -68,6 +70,9 @@ export default function handler(req, res) {
   .confirm-btn:hover { opacity: 0.92; }
   .confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+  .checkbox-row { display: flex; align-items: center; gap: 7px; margin-top: 10px; font-size: 11.5px; color: var(--text-muted); flex-shrink: 0; cursor: pointer; }
+  .checkbox-row input[type="checkbox"] { accent-color: var(--accent); }
+
   button.text-btn { margin-top: 12px; padding: 8px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid var(--border); background: #fff; color: var(--text); cursor: pointer; }
   button.text-btn:hover { background: #f4f5f7; }
 </style>
@@ -76,10 +81,12 @@ export default function handler(req, res) {
 
   <div class="header">
     <div class="dot"></div>
-    <div>
+    <div style="flex: 1;">
       <h1>Advocacia Escalável</h1>
       <span>Chamado técnico via Sofia</span>
     </div>
+    <a href="https://docs.google.com/document/d/17Fss4zZHuNkqEtVV-nXOPWbDiJs6tlj0iogEUrYKdrA/edit?usp=sharing"
+       target="_blank" rel="noopener" class="guia-link">Guia de uso ↗</a>
   </div>
 
   <div class="body">
@@ -103,6 +110,10 @@ export default function handler(req, res) {
         </span>
       </div>
       <div id="messageList"></div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="avisarCliente" checked>
+        <span>Avisar no chat que o chamado foi aberto</span>
+      </label>
       <button class="confirm-btn" id="confirmBtn" onclick="confirmarGeracao()">Gerar pedido de suporte</button>
     </div>
 
@@ -247,6 +258,8 @@ export default function handler(req, res) {
 
     setSimpleState('loading', 'Enviando para a Sofia…', 'Transmitindo ' + selecionadas.length + ' mensagem(ns) selecionada(s).');
 
+    var avisarCliente = document.getElementById('avisarCliente').checked;
+
     var payload = {
       dialog_id: contexto.dialogId,
       chat_id: contexto.chatId,
@@ -254,6 +267,7 @@ export default function handler(req, res) {
       portal: contexto.portal,
       origem: 'bitrix24_contact_center_botao',
       timestamp: new Date().toISOString(),
+      avisar_cliente: avisarCliente,
       mensagens: selecionadas
     };
 
