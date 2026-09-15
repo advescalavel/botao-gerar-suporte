@@ -96,6 +96,7 @@
         <p class="detail" id="detail">Buscando mensagens do atendimento.</p>
         <div class="meta" id="meta" style="display:none;"></div>
         <button id="retryBtn" class="text-btn" style="display:none;" onclick="carregarMensagens()">Tentar novamente</button>
+        <button id="newRequestBtn" class="confirm-btn" style="display:none; width: 100%; margin-top: 16px;" onclick="iniciarNovoPedido()">Gerar novo pedido</button>
       </div>
     </div>
 
@@ -143,12 +144,34 @@
     var icon = document.getElementById('icon');
     document.getElementById('title').textContent = titleText;
     document.getElementById('detail').textContent = detailText;
+    
+    // Ocultar sempre a meta e os botões por padrão
+    document.getElementById('meta').style.display = 'none';
     var retry = document.getElementById('retryBtn');
+    var newReq = document.getElementById('newRequestBtn');
+    retry.style.display = 'none';
+    if (newReq) newReq.style.display = 'none';
+    
     icon.className = 'icon ' + state;
-    if (state === 'loading') { icon.innerHTML = '<div class="spinner"></div>'; retry.style.display = 'none'; }
-    else if (state === 'ok') { icon.innerHTML = '✓'; retry.style.display = 'none'; }
-    else if (state === 'err') { icon.innerHTML = '!'; retry.style.display = 'inline-block'; }
-    else if (state === 'warn') { icon.innerHTML = '!'; retry.style.display = 'none'; }
+    if (state === 'loading') { 
+        icon.innerHTML = '<div class="spinner"></div>'; 
+    }
+    else if (state === 'ok') { 
+        icon.innerHTML = '✓'; 
+        if (newReq) newReq.style.display = 'inline-block'; 
+    }
+    else if (state === 'err') { 
+        icon.innerHTML = '!'; 
+        retry.style.display = 'inline-block'; 
+    }
+    else if (state === 'warn') { 
+        icon.innerHTML = '!'; 
+    }
+  }
+
+  function iniciarNovoPedido() {
+    document.getElementById('avisarCliente').checked = true;
+    carregarMensagens();
   }
 
   function limparTexto(texto) {
